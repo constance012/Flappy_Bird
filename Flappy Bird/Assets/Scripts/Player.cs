@@ -13,20 +13,38 @@ public class Player : MonoBehaviour
 	[SerializeField] private float maxTiltAngle = 45f;
 
 	// Private fields.
-	private Vector2 _direction;
+	private Vector2 _movement;
 
 	private void Update()
 	{
 		if (Input.GetButtonDown("Jump"))
 		{
-			_direction = Vector2.up * flapStrength;
+			_movement = Vector2.up * flapStrength;
 			rb2D.rotation = maxTiltAngle;
 		}
 		
-		_direction.y = Mathf.Max(_direction.y + gravity * Time.deltaTime, maxFallSpeed);
-		rb2D.position += _direction * Time.deltaTime;
+		_movement.y = Mathf.Max(_movement.y + gravity * Time.deltaTime, maxFallSpeed);
+		rb2D.position += _movement * Time.deltaTime;
 
-		float targetRotation = maxTiltAngle * Mathf.Sign(_direction.y);
-		rb2D.rotation = Mathf.Lerp(0f, targetRotation, Mathf.Abs(_direction.y) / Mathf.Abs(maxFallSpeed));
+		float targetRotation = maxTiltAngle * Mathf.Sign(_movement.y);
+		rb2D.rotation = Mathf.Lerp(0f, targetRotation, Mathf.Abs(_movement.y) / Mathf.Abs(maxFallSpeed));
+	}
+
+	private void OnTriggerEnter2D(Collider2D collider)
+	{
+		if (collider.CompareTag("Obstacle"))
+		{
+			GameManager.Instance.GameOver();
+		}
+		else if (collider.CompareTag("ScoringArea"))
+		{
+			GameManager.Instance.UpdateScore();
+		}
+	}
+
+	public void ResetBehaviour()
+	{
+		_movement = Vector2.zero;
+		transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
 	}
 }
